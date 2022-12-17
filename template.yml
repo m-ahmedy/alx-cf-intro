@@ -1,0 +1,41 @@
+
+Resources:
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH and HTTP
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      Tags:
+        - Key: Name
+          Value: CF-EC2Instance
+      
+      ImageId: ami-0ceecbb0f30a902a6 # Amazon Linux 2 Oregon
+
+      InstanceType: t2.micro
+
+      KeyName: us-west-2-key
+
+      SecurityGroupIds:
+        - !Ref EC2SecurityGroup
+      
+      UserData: !Base64 |
+        #!/bin/bash
+        # Use this for your user data (script from top to bottom)
+        # install httpd (Linux 2 version)
+        yum update -y
+        yum install -y httpd
+        systemctl start httpd
+        systemctl enable httpd
+        echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
